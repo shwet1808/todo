@@ -94,6 +94,7 @@ const Page = () => {
           placeholder="Enter Task"
           value={task}
           onChange={(e) => setTask(e.target.value)}
+          maxLength={50}
         />
 
         <input
@@ -102,6 +103,7 @@ const Page = () => {
           placeholder="Enter Description"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
+          maxLength={100}
         />
 
         <button
