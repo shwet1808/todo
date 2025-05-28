@@ -6,14 +6,14 @@ const Page = () => {
   const [task, setTask] = useState("");
   const [desc, setDesc] = useState("");
   const [maintask, setmainTask] = useState([]);
-  const [editIndex, setEditIndex] = useState(null); // 👈 new state for editing
+  const [editIndex, setEditIndex] = useState(null); // 👈 editing state
+  const [error, setError] = useState(""); // 👈 error message state
 
   const deleteHandler = (i) => {
     let copytask = [...maintask];
     copytask.splice(i, 1);
     setmainTask(copytask);
 
-    // If you're deleting the item being edited, reset the form
     if (editIndex === i) {
       setEditIndex(null);
       setTask("");
@@ -24,24 +24,24 @@ const Page = () => {
   const submitHandler = (e) => {
     e.preventDefault();
 
+    if (!task.trim()) {
+      setError("Task cannot be empty.");
+      return;
+    }
+
     if (editIndex !== null) {
-      // 👈 if editing, update the task
       const updatedTasks = [...maintask];
       updatedTasks[editIndex] = { task, desc };
       setmainTask(updatedTasks);
-      setEditIndex(null); // exit edit mode
+      setEditIndex(null);
     } else {
-      // 👈 otherwise, add a new task
       setmainTask([...maintask, { task, desc }]);
     }
 
     setTask("");
     setDesc("");
-    console.log(maintask);
+    setError("");
   };
-
-  // console.log("Task:", task);
-  // console.log("Description:", desc);
 
   let renderTask = <h2>No Task Added</h2>;
 
@@ -61,7 +61,8 @@ const Page = () => {
             onClick={() => {
               setTask(t.task);
               setDesc(t.desc);
-              setEditIndex(i); // enter edit mode
+              setEditIndex(i);
+              setError("");
             }}
             className="bg-yellow-500 text-white px-3 py-1 rounded"
           >
@@ -91,16 +92,17 @@ const Page = () => {
         <input
           type="text"
           className="text-2xl border-2 border-zinc-800 m-2 p-4"
-          placeholder="Enter Task"
+          placeholder=" Enter Task"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           maxLength={50}
         />
+        {error && <p className="text-red-500 text-xl ml-4">{error}</p>}
 
         <input
           type="text"
-          className="text-2xl border-2 border-zinc-800 m-2 p-4"
-          placeholder="Enter Description"
+          className="text-2xl border-2 border-zinc-800 m-2 p-2"
+          placeholder=" Enter Description"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
           maxLength={100}
@@ -112,7 +114,7 @@ const Page = () => {
             editIndex !== null ? "bg-green-500" : "bg-black"
           } text-white px-4 py-3 text-2xl font-bold rounded m-5`}
         >
-          {editIndex !== null ? "Update Task" : "Add Task"}
+          {editIndex !== null ? " Update Task" : " Add Task"}
         </button>
       </form>
 
