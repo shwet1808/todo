@@ -1,20 +1,22 @@
-"use client";
+"use client"; // Indicates this is a Client Component in Next.js
 
 import React, { useState } from "react";
+import TaskForm from "./TaskForm";
 
 const Body = () => {
-  const [task, setTask] = useState("");                    // Stores & updates current task name being entered
-  const [desc, setDesc] = useState("");                   // Stores & updates current description being entered
-  const [maintask, setmainTask] = useState([]);           // Stores the array of all tasks
-  const [editIndex, setEditIndex] = useState(null);      // Tracks which task is being edited (null means no edit)
-  const [error, setError] = useState("");                // Stores error messages for form validation
+  const [task, setTask] = useState(""); // task update
+  const [desc, setDesc] = useState(""); // desc update
+  const [maintask, setmainTask] = useState([]); // Stores the array of all tasks
+  const [editIndex, setEditIndex] = useState(null); // Tracks which task is being edited (null means no edit)
+  const [error, setError] = useState(""); // Stores error messages for form validation
 
+  // Function to handle task deletion
   const deleteHandler = (i) => {
-    let copytask = [...maintask]; // Create a copy of the tasks array
+    let copytask = [...maintask]; // Create a copy of the main task array
     copytask.splice(i, 1); // Remove the task at index i
-    setmainTask(copytask); // Update state with the new array
+    setmainTask(copytask); // Update the main task list
 
-    // If user is deleting the task being edited, reset the edit state ( didn't get that )
+    // If the deleted task was being edited, reset edit state (did not understand)
     if (editIndex === i) {
       setEditIndex(null);
       setTask("");
@@ -22,106 +24,94 @@ const Body = () => {
     }
   };
 
+  // Function to handle form submission (both add and edit)
   const submitHandler = (e) => {
     e.preventDefault();
 
-    // Validate task isn't empty (task.trim removes spaces)
+    // Validate that task name isn't empty (trim is used to remove spaces )
     if (!task.trim()) {
       setError("Task cannot be empty.");
       return;
     }
 
+    // If in edit mode (editIndex is not null)
     if (editIndex !== null) {
-      // If editing an existing task
-      const updatedTasks = [...maintask];
-      updatedTasks[editIndex] = { task, desc }; // Update the task
-      setmainTask(updatedTasks);
+      const updatedTasks = [...maintask]; // Create a copy of the tasks array
+      updatedTasks[editIndex] = { task, desc }; // Update the task at editIndex with new values
+      setmainTask(updatedTasks); // Update the main task list
       setEditIndex(null); // Exit edit mode
     } else {
-      // If adding a new task
+      // If not in edit mode, add a new task to the list
       setmainTask([...maintask, { task, desc }]);
     }
 
-    //used for clearing input and messege after uodate 
+    // Reset form fields and error state
     setTask("");
     setDesc("");
     setError("");
   };
 
-  let renderTask = <h2>No Task Added</h2>;
-
-  if (maintask.length > 0) {
-    renderTask = maintask.map((t, i) => (
-      <li
-        key={i}
-        className="flex justify-between items-center border-b border-gray-300 py-1"
-      >
-        <div>
-          <h5 className="text-xl font-semibold">{t.task}</h5>
-          <p className="text-gray-600">{t.desc}</p>
-        </div>
-
-        <div className="space-x-2">
-          <button
-            onClick={() => {
-              setTask(t.task);
-              setDesc(t.desc);
-              setEditIndex(i);
-              setError("");
-            }}
-            className="bg-yellow-500 text-white px-3 py-1 rounded"
-          >
-            Edit
-          </button>
-
-          <button
-            onClick={() => {
-              deleteHandler(i);
-            }}
-            className="bg-red-500 text-white px-3 py-1 rounded"
-          >
-            Delete
-          </button>
-        </div>
-      </li>
-    ));
-  }
+  // Function to handle editing a task
+  const editHandler = (index) => {
+    // Get the task to edit from the main list
+    const taskToEdit = maintask[index];
+    // Set form fields with the task's current values
+    setTask(taskToEdit.task);
+    setDesc(taskToEdit.desc);
+    // Set the edit index to this task's index
+    setEditIndex(index);
+    // Clear any previous errors
+    setError("");
+  };
 
   return (
     <>
-      <form onSubmit={submitHandler}>
-        <input
-          type="text"
-          className="text-2xl border-2 border-zinc-800 m-2 p-4"
-          placeholder=" Enter Task"
-          value={task}
-          onChange={(e) => setTask(e.target.value)}
-          maxLength={50}
-        />
-        {error && <p className="text-red-500 text-xl ml-4">{error}</p>}
-
-        <input
-          type="text"
-          className="text-2xl border-2 border-zinc-800 m-2 p-2"
-          placeholder=" Enter Description"
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          maxLength={100}
-        />
-
-        <button
-          type="submit"
-          className={`${
-            editIndex !== null ? "bg-green-500" : "bg-black"
-          } text-white px-4 py-3 text-2xl font-bold rounded m-5`}
-        >
-          {editIndex !== null ? " Update Task" : " Add Task"}
-        </button>
-      </form>
+      <TaskForm
+        onSubmit={submitHandler}
+        task={task}
+        desc={desc}
+        onTaskChange={(e) => setTask(e.target.value)}
+        onDescChange={(e) => setDesc(e.target.value)}
+        error={error}
+        isEditing={editIndex !== null}
+      />
 
       <hr />
+
       <div className="p-8 bg-slate-200 text-2xl">
-        <ul>{renderTask}</ul>
+        {maintask.length === 0 ? (
+          <h2>No Task Added</h2>
+        ) : (
+          <ul>
+            {maintask.map((task, index) => (
+              <li
+                key={index}
+                className="flex justify-between items-center border-b border-gray-300 py-1"
+              >
+                <div>
+                  <h5 className="text-xl font-semibold">{task.task}</h5>
+                  <p className="text-gray-600">{task.desc}</p>
+                </div>
+
+                <div className="space-x-2">
+                  <button
+                    onClick={() => editHandler(index)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteHandler(index)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </>
   );
